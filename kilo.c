@@ -50,6 +50,8 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <runt.h>
+#include <sys/stat.h>
 
 /* Syntax highlight types */
 #define HL_NORMAL 0
@@ -104,6 +106,10 @@ struct editorConfig {
     char statusmsg[80];
     time_t statusmsg_time;
     struct editorSyntax *syntax;    /* Current syntax highlight, or NULL. */
+    runt_vm vm;
+    unsigned char *mem;
+    runt_cell *cells;
+    FILE *tape;
 };
 
 static struct editorConfig E;
@@ -112,6 +118,7 @@ enum KEY_ACTION{
         KEY_NULL = 0,       /* NULL */
         CTRL_C = 3,         /* Ctrl-c */
         CTRL_D = 4,         /* Ctrl-d */
+        CTRL_E = 5,         /* Ctrl+e */
         CTRL_F = 6,         /* Ctrl-f */
         CTRL_H = 8,         /* Ctrl-h */
         TAB = 9,            /* Tab */
@@ -1156,7 +1163,15 @@ void editorMoveCursor(int key) {
         }
     }
 }
-
+void evaluate_runt()
+{
+    const char *str = E.row[E.rowoff + E.cy].chars;
+    runt_pmark_set(&E.vm);
+    runt_print(&E.vm, "evaluating '%s'\n", str);
+    runt_compile(&E.vm, str);
+    runt_pmark_free(&E.vm);
+    fflush(E.tape);
+}
 /* Process events arriving from the standard input, which is, the user
  * is typing stuff on the terminal. */
 #define KILO_QUIT_TIMES 3
@@ -1218,6 +1233,9 @@ void editorProcessKeypress(int fd) {
     case CTRL_L: /* ctrl+l, clear screen */
         /* Just refresht the line as side effect. */
         break;
+    case CTRL_E: /* ctrl+l, clear screen */
+        evaluate_runt();
+        break;
     case ESC:
         /* Nothing to do for ESC in this mode. */
         break;
@@ -1252,6 +1270,31 @@ void initEditor(void) {
     E.screenrows -= 2; /* Get room for status bar. */
 }
 
+static void init_runt()
+{
+    runt_vm *vm = &E.vm;
+    runt_init(vm);
+    mkfifo("tape", 0755);
+    E.tape = fopen("tape", "w");
+    runt_filehandle(vm, E.tape);
+    E.mem = malloc(4 * RUNT_MEGABYTE);
+    E.cells = malloc(sizeof(runt_cell) * 1024);
+
+    runt_cell_pool_set(vm, E.cells, 1024);
+    runt_cell_pool_init(vm);
+    runt_memory_pool_set(vm, E.mem, 4 * RUNT_MEGABYTE);
+    runt_load_stdlib(vm);
+    runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);
+}
+
+static void clean_runt()
+{
+    runt_close_plugins(&E.vm);
+    fclose(E.tape);
+    free(E.mem);
+    free(E.cells);
+}
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr,"Usage: kilo <filename>\n");
@@ -1264,9 +1307,12 @@ int main(int argc, char **argv) {
     enableRawMode(STDIN_FILENO);
     editorSetStatusMessage(
         "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find");
+
+    init_runt();
     while(1) {
         editorRefreshScreen();
         editorProcessKeypress(STDIN_FILENO);
     }
+    clean_runt();
     return 0;
 }
