@@ -1,6 +1,16 @@
 Kilo
 ===
 
+This fork of Kilo is now a REPL for 
+[Runt](http://www.github.com/paulbatchelor/runt.git)!
+
+Simply write a line runt code, and hit ctrl-e to evaluate that line!
+
+Runt output is sent to a FIFO called "tape", which is created in the current
+working directory. To see it, open up another terminal window in the same
+directory, and run "tail -f tape". For best results, use a terminal 
+multiplexer like tmux, screen, or even dvtm!
+
 Kilo is a small text editor in less than 1K lines of code (counted with cloc).
 
 A screencast is available here: https://asciinema.org/a/90r2i9bq8po03nazhqtsifksb
