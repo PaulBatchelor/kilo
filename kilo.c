@@ -1167,7 +1167,6 @@ void evaluate_runt()
 {
     const char *str = E.row[E.rowoff + E.cy].chars;
     runt_pmark_set(&E.vm);
-    runt_print(&E.vm, "evaluating '%s'\n", str);
     runt_compile(&E.vm, str);
     runt_pmark_free(&E.vm);
     fflush(E.tape);
@@ -1274,7 +1273,7 @@ static void init_runt()
 {
     runt_vm *vm = &E.vm;
     runt_init(vm);
-    mkfifo("tape", 0755);
+    /* mkfifo("tape", 0755); */
     E.tape = fopen("tape", "w");
     runt_filehandle(vm, E.tape);
     E.mem = malloc(4 * RUNT_MEGABYTE);
