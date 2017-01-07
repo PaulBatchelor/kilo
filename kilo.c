@@ -52,6 +52,7 @@
 #include <fcntl.h>
 #include <runt.h>
 #include <sys/stat.h>
+#include <time.h>
 
 /* Syntax highlight types */
 #define HL_NORMAL 0
@@ -1308,7 +1309,7 @@ int main(int argc, char **argv) {
         "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find");
 
     init_runt();
-    while(1) {
+    while(runt_is_alive(&E.vm)) {
         editorRefreshScreen();
         editorProcessKeypress(STDIN_FILENO);
     }
