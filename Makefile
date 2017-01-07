@@ -7,4 +7,4 @@ install:
 	install kilo /usr/local/bin
 
 clean:
-	rm kilo
+	rm -rf kilo
