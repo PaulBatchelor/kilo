@@ -1275,7 +1275,7 @@ static void init_runt()
     runt_vm *vm = &E.vm;
     runt_init(vm);
     /* mkfifo("tape", 0755); */
-    E.tape = fopen("tape", "w");
+    E.tape = fopen("tape", "a");
     runt_filehandle(vm, E.tape);
     E.mem = malloc(4 * RUNT_MEGABYTE);
     E.cells = malloc(sizeof(runt_cell) * 1024);
