@@ -5,7 +5,6 @@ kilo: kilo.c
 
 install:
 	install kilo /usr/local/bin
-	install kilo_listen /usr/local/bin
 
 clean:
 	rm -rf kilo

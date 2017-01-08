@@ -4,16 +4,37 @@ Kilo
 This fork of Kilo is now a REPL for 
 [Runt](http://www.github.com/paulbatchelor/runt.git)!
 
-# Usage
+## REPL Usage
 
-Open up Kilo.
+The Kilo REPL allows runt code in the text editor to be evaluated one line
+at a time by pressing "CTRL-e". Kilo writes output from Runt directly to a file
+called "tape" in the project working directory.
 
-Write a line runt code, and hit ctrl-e to evaluate that line!
+### Method 1: Using tail -f
 
-Runt output is sent to a text file called "tape", which is created in the current
-working directory. To see it, open up another terminal window in the same
-directory, and run "tail -f tape". For best results, use a terminal 
-multiplexer like tmux, screen, or even dvtm!
+The simplest way to use the REPL is simply to use "tail -f" to monitor the 
+file tape. This is done in the following way:
+
+- Start up Kilo. 
+- Start another terminal window in the same working directory
+- Run "tail -f tape"
+- In kilo write '"hello world" say' and hit CTRL-e
+- If everything works, "hello world" should appear in the other window
+
+### Method 2: Using a terminal multiplexer
+To use Kilo as a REPL, you will need a terminal multiplexer like tmux, screen, 
+or dvtm.
+Start up your multiplexer, and do the following:
+
+- spawn two terminal windows, each in the working directory. One will be
+the editor window. The other will serve as the listener.
+- In your designated listener window, run "ln -s $(tty) tape". This will create
+a file called "tape". 
+- Run kilo in the designated editor window.
+- write '"hello world" say' and hit CTRL-e. You should see
+"hello world" appear on the other window!
+
+## Description
 
 Kilo is a small text editor in less than 1K lines of code (counted with cloc).
 
